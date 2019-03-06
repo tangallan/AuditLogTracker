@@ -1,5 +1,6 @@
 ﻿using System;
 using AuditLogConsoleApp.Models;
+using AuditLogTracking;
 
 namespace AuditLogConsoleApp
 {
@@ -11,22 +12,29 @@ namespace AuditLogConsoleApp
             // User name is mock as user context, we can probably use DI to inject user context into our Audit Log
             var userName = "Allan";
 
-
-            var user = new User(userName)
+            var user = new User()
             {
-                FirstName = "Allan"
+                FirstName = "Allan",
+                LastName = "Tang",
+                Email = "tang@gmail.com"
             };
-            user.LastName = "Tang";
-            user.Email = "tang.allan03@gmail.com";
-            user.FirstName = "Allan 2";
-            user.LastName = "Tang 2";
+            var userWithTracker = new AuditLogTracker<User>(user, userName);
 
-            user.DisplayChanges(); // console writeline the changes
+            userWithTracker.UpdateAndTrack("FirstName", "Allan 2");
+            userWithTracker.UpdateAndTrack("LastName", "Tang 2");
+            userWithTracker.UpdateAndTrack("Email", "tang@gmail.com");
+
+            userWithTracker.DisplayChanges();
+
+            Console.WriteLine();
+            Console.WriteLine($"Validating if the tracker is updating the object properties");
+            Console.WriteLine($"FirstName should be 'Allan 2' ===> {user.FirstName.Equals("Allan 2")}");
+            Console.WriteLine($"LastName should be 'Tang 2' ===> {user.LastName.Equals("Tang 2")}");
+            Console.WriteLine($"Email should be 'Allan 2' ===> {user.Email.Equals("tang.allan03+1@gmail.com")}");
 
             Console.WriteLine();
 
-
-            var product = new Product(userName)
+            var product = new Product()
             {
                 ProductNumber = "p-1000",
                 Sku = "sku-100",
@@ -36,15 +44,16 @@ namespace AuditLogConsoleApp
                 Width = 15,
                 Weight = 23
             };
-            product.Weight = 25;
-            product.ProductCost = 29.99m;
-            product.ProductCost = 30.99m;
-            product.ProductCost = 33.99m;
-            product.ProductCost = 35.99m;
-            
-            product.DisplayChanges();  // console writeline the changes
-            
-           
+            var productWithTracker = new AuditLogTracker<Product>(product, userName);
+            productWithTracker.UpdateAndTrack("Weight", 25);
+            productWithTracker.UpdateAndTrack("ProductCost", 29.99m);
+            productWithTracker.UpdateAndTrack("ProductCost", 30.99m);
+            productWithTracker.UpdateAndTrack("ProductCost", 33.99m);
+            productWithTracker.UpdateAndTrack("ProductCost", 35.99m);
+
+            productWithTracker.DisplayChanges();  // console writeline the changes
+
+
             Console.WriteLine("================== DONE TESTING Audit Log Tracker ==================");
             Console.ReadLine();
         }

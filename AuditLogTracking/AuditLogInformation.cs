@@ -6,7 +6,7 @@ namespace AuditLogTracking
     /// <summary>
     /// This class will represent what we will store in the audit log. For example class name, prev properties and current properties value
     /// </summary>
-    public class AuditLogInformation
+    internal class AuditLogInformation
     {
         public AuditLogInformation(string entity, string user)
         {

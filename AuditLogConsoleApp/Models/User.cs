@@ -1,49 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AuditLogTracking;
-
-namespace AuditLogConsoleApp.Models
+﻿namespace AuditLogConsoleApp.Models
 {
-    public class User : AuditLogBase
+    public class User
     {
-        public User(string userContextName) : base(nameof(User), userContextName)
+        public User()
         {
-            base.Initialize();
         }
 
-        private string _firstName;
-
-        public string FirstName
-        {
-            get => _firstName;
-            set
-            {
-                _firstName = value;
-                base.OnChanges();
-            }
-        }
-
-        private string _lastName;
-        public string LastName
-        {
-            get => _lastName;
-            set
-            {
-                _lastName = value;
-                base.OnChanges();
-            }
-        }
-
-        private string _email;
-        public string Email
-        {
-            get => _email;
-            set
-            {
-                _email = value;
-                base.OnChanges();
-            }
-        }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
     }
 }

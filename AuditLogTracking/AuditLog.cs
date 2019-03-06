@@ -8,36 +8,34 @@ using System.Text;
 namespace AuditLogTracking
 {
     /// <summary>
-    /// This is a base class to be used to track changes on the parent class
+    /// This class is the main class of how we store and keep track of updates
     /// </summary>
-    public class AuditLogBase 
+    internal class AuditLog<T>
     {
         private readonly AuditLogInformation _auditLogInformations;
         private readonly Dictionary<string, object> _currentState;
+        private readonly T _entity;
 
-        /// <summary>
-        /// This constructor takes in the name of the class we are tracking and the user context (user name)
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="userContextName"></param>
-        public AuditLogBase(string entity, string userContextName)
+        public AuditLog(T entity, string userContextName)
         {
-            _auditLogInformations = new AuditLogInformation(entity, userContextName);
+            _entity = entity;
+            _auditLogInformations = new AuditLogInformation(entity.GetType().Name, userContextName);
             _currentState = new Dictionary<string, object>();
+            Initialize();
         }
 
         /// <summary>
         /// Initialize our Current State to keep track of the previous values
         /// </summary>
-        protected void Initialize()
+        private void Initialize()
         {
-            var thisType = this.GetType();
+            var thisType = _entity.GetType();
             PropertyInfo[] properties = thisType.GetProperties();
 
             // Save the current value of the properties to our dictionary.
             foreach (PropertyInfo property in properties)
             {
-                var value = thisType.GetProperty(property.Name)?.GetValue(this);
+                var value = thisType.GetProperty(property.Name)?.GetValue(_entity);
 
                 _currentState.Add(property.Name, value);
             }
@@ -47,20 +45,19 @@ namespace AuditLogTracking
         /// On changes needs to be called by the properties we want to keep track of
         /// Inside the on changes we update our Current State to keep track of the previous value and it also logs the changes
         /// </summary>
-        /// <param name="callerMember"></param>
-        protected void OnChanges( [CallerMemberName] string callerMember= "")
+        public void OnChanges(string propertyName)
         {
-            var currentValue = this.GetType().GetProperty(callerMember).GetValue(this);
-            if (this._currentState.ContainsKey(callerMember))
+            var currentValue = _entity.GetType().GetProperty(propertyName)?.GetValue(_entity);
+            if (_currentState.ContainsKey(propertyName))
             {
-                var prevValue = this._currentState[callerMember];
-                this._currentState[callerMember] = currentValue;
+                var prevValue = _currentState[propertyName];
+                _currentState[propertyName] = currentValue;
 
-                _auditLogInformations.Changes.Add($"Field {callerMember}, original value: {prevValue ?? ""}, new value: {currentValue}");
+                _auditLogInformations.Changes.Add($"Field {propertyName}, original value: {prevValue ?? ""}, new value: {currentValue}");
             }
             else
             {
-                _auditLogInformations.Changes.Add($"Field {callerMember}, original value: , new value: {currentValue}");
+                _auditLogInformations.Changes.Add($"Field {propertyName}, original value: , new value: {currentValue}");
             }
         }
 
@@ -69,7 +66,7 @@ namespace AuditLogTracking
         /// </summary>
         public void DisplayChanges()
         {
-            foreach (var c in this._auditLogInformations.Changes)
+            foreach (var c in _auditLogInformations.Changes)
             {
                 Console.WriteLine(c);
             }
